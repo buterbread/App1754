@@ -1,0 +1,109 @@
+html, body {
+	margin: 0;
+	font: normal normal 14px/1.4 Helvetica, Arial, sans-serif;
+	background: #ffffff;
+	overflow: hidden;
+	height: 100%;
+}
+
+#root {}
+
+.wrapper {
+	min-width: 320px;
+}
+
+.playground-box {
+	display: table;
+	margin: 100px auto 0;
+	text-align: center;
+	font-size: 0;
+}
+
+.item {
+	display: inline-block;
+	vertical-align: top;
+	position: relative;
+	border: 1px solid #cccccc;
+	width: 48px;
+	height: 48px;
+	margin: 1px 1px;
+	box-sizing: border-box;
+	text-align: center;
+	font-size: 16px;
+	line-height: 48px;
+	cursor: pointer;
+
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.item:hover {
+	border-color: #333333;
+	z-index: 10;
+}
+
+.item[value="0"] {
+	font-size: 0;
+}
+
+.clear {
+	display: block;
+	clear: both;
+}
+
+.drops-counter {
+	position: absolute;
+	top: 30px;
+	right: 30px;
+	font-size: 20px;
+	line-height: 50px;
+	width: 50px;
+	height: 50px;
+	border: 1px solid #0c82df;
+	border-radius: 5px;
+	text-align: center;
+}
+
+.hello-screen {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	text-align: center;
+	padding: 50px 20px;
+	z-index: 9999;
+	background: #ffffff;
+	font-size: 36px;
+	color: cornflowerblue;
+}
+
+.you-lost {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	text-align: center;
+	padding: 50px 20px;
+	z-index: 9999;
+	background: #333;
+	font-size: 36px;
+	color: coral;
+}
+
+.you-win {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	text-align: center;
+	padding: 50px 20px;
+	z-index: 9999;
+	background: #fafafa;
+	font-size: 36px;
+	color: mediumseagreen;
+}

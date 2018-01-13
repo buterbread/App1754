@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title></title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<script src="js/jquery-3.2.1.min.js"></script>
+	<script src="js/underscore.js"></script>
+	<script src="js/vue.min.js"></script>
+	<script src="js/vuex.js"></script>
+	<script src="js/main.js"></script>
+
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="root">
+	<div class="wrapper">
+		<hello-screen v-if="!gameStarted"></hello-screen>
+		<you-lost v-if="youLost"></you-lost>
+		<you-win v-if="youWin"></you-win>
+		<template v-if="gameStarted">
+			<drops-counter></drops-counter>
+			<playground></playground>
+		</template>
+	</div>
+</div>
+
+</body>
