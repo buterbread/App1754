@@ -2,27 +2,44 @@
 
 (function($) {
 	$(document).ready(function() {
-
-		var ARRAY_WIDTH = 6;
-		var ARRAY_HEIGHT = 6;
+		var ARRAY_WIDTH = 5;
+		var ARRAY_HEIGHT = 5;
 		var MIN_ITEM_VALUE = 0;
 		var MAX_ITEM_VALUE = 4;
-		var INITIAL_DROPS_COUNTER = 10;
-		var DROP_POP_DELAY = 1000;
+		var INITIAL_DROPS_COUNTER = 1000;
+		var DROP_POP_DELAY = 500;
+		var DROP_INJECTION_DELAY = 170;
+
+		var directions = [
+			{ top: 0, left: -1, label: 'left' },
+			{ top: -1, left: 0, label: 'top' },
+			{ top: 0, left: 1, label: 'right' },
+			{ top: 1, left: 0, label: 'bottom' },
+			// { top: -1, left: -1, label: 'topLeft' },
+			// { top: 1, left: 1, label: 'bottomRight' }
+		];
 
 		Vue.use(Vuex);
+
+		function Bubble(options) {
+			this.value = options.value;
+			this.row = options.row;
+			this.col = options.col;
+			this.isPopAnimationActive = false;
+			this.directions = directions.slice();
+			this.dropPassageAnimation = {
+				'left': false,
+				'top': false,
+				'right': false,
+				'bottom': false,
+				'topLeft': false,
+				'bottomRight': false,
+			};
+		}
 
 		var store = new Vuex.Store({
 			state: {
 				itemsArray: [],
-				directions: [
-					{ top: 0, left: -1 },
-					{ top: -1, left: 0 },
-					{ top: 0, left: 1 },
-					{ top: 1, left: 0 },
-					// { top: -1, left: -1 },
-					// { top: 1, left: 1 }
-				],
 				dropsCount: 0,
 				gameStarted: false
 			},
@@ -33,11 +50,11 @@
 					for (var i = 0; i < ARRAY_HEIGHT; i++) {
 						var itemsRow = [];
 						for (var j = 0; j < ARRAY_WIDTH; j++) {
-							var col = {
+							var col = new Bubble({
 								value: Math.floor(Math.random() * (MAX_ITEM_VALUE - MIN_ITEM_VALUE + 1)) + MIN_ITEM_VALUE,
 								row: i,
-								col: j
-							};
+								col: j,
+							});
 							itemsRow.push(col);
 						}
 						itemsArray.push(itemsRow);
@@ -63,83 +80,136 @@
 					var { row, col, addBonusDrop } = options;
 
 					context.state.dropsCount--;
-					this.commit('INCREASE_ITEM', { row: options.row, col: options.col, addBonusDrop: false });
 
-					if (context.state.itemsArray[row][col].value > MAX_ITEM_VALUE) {
-						context.state.itemsArray[row][col].value = MIN_ITEM_VALUE;
+					this.commit('INCREASE_ITEM', { row: options.row, col: options.col });
 
-						this.dispatch('emitAllDrops', { row:row, col: col, addBonusDrop: true });
+					this.dispatch('popBubble', { row:row, col: col, addBonusDrop: true });
+				},
+
+				injectAllDrops: function(context, options) {
+					var { row, col, addBonusDrop } = options;
+
+					if (addBonusDrop === true) {
+						context.state.dropsCount++;
 					}
+
+					var emitter = context.state.itemsArray[row][col];
+
+					emitter.directions.forEach(function(direction) {
+						context.dispatch('injectSingleDrop', { row: row, col: col, direction: direction } );
+					});
 				},
 
-				emitAllDrops: function(context, options) {
-					setTimeout(function () {
-						var { row, col, addBonusDrop } = options;
+				injectSingleDrop: function (context, options) {
+					var items = context.state.itemsArray;
 
-						if (addBonusDrop === true) {
-							context.state.dropsCount++;
-						}
+					var initialItemCords = options.initialItemCords || options;
 
-						context.state.directions.forEach(function(direction) {
-							context.dispatch('emitSingleDrop', { row: row, col: col, offset: direction } );
-						});
-					}, DROP_POP_DELAY);
-				},
+					var row = options.row + options.direction.top;
+					var col = options.col + options.direction.left;
 
-				emitSingleDrop: function (context, options) {
-					var row = options.row + options.offset.top;
-					var col = options.col + options.offset.left;
-
-					if (!context.state.itemsArray[row] || !context.state.itemsArray[row][col]) {
+					if (!items[row] || !items[row][col]) {
+						context.dispatch('stopDropPassageAnimation', initialItemCords);
 						return;
 					}
 
-					if (context.state.itemsArray[row][col].value === 0) {
+					context.dispatch('startDropPassageAnimation', options);
+
+					var top = options.direction.top;
+					var left = options.direction.left;
+
+					if (items[row][col].value === 0) {
 						var newTop;
 						var newLeft;
 
-						if (options.offset.top === 0) {
-							newTop = options.offset.top;
-						} else if (options.offset.top < 0) {
-							newTop = options.offset.top - 1
+						if (top === 0) {
+							newTop = top;
+						} else if (top < 0) {
+							newTop = top - 1
 						} else {
-							newTop = options.offset.top + 1
+							newTop = top + 1
 						}
 
-						if (options.offset.left === 0) {
-							newLeft = options.offset.left;
-						} else if (options.offset.left < 0) {
-							newLeft = options.offset.left - 1
+						if (left === 0) {
+							newLeft = left;
+						} else if (left < 0) {
+							newLeft = left - 1
 						} else {
-							newLeft = options.offset.left + 1
+							newLeft = left + 1
 						}
-						
+
 						setTimeout(function () {
-							context.dispatch('emitSingleDrop', {
+							context.dispatch('injectSingleDrop', {
 								row: options.row,
 								col: options.col,
-								offset: {
+								direction: {
 									top: newTop,
 									left: newLeft
-								}
+								},
+								initialItemCords: initialItemCords
 							})
-						}, 1000);
+						}, DROP_INJECTION_DELAY);
 						return;
 					}
 
 					context.commit('INCREASE_ITEM', { row: row, col: col });
 
+					setTimeout(function () {
+						context.dispatch('stopDropPassageAnimation', initialItemCords);
+					}, DROP_INJECTION_DELAY);
+
+					context.dispatch('popBubble', { row: row, col: col, addBonusDrop: true });
+				},
+
+				startDropPassageAnimation: function(context, options) {
+					var items = context.state.itemsArray;
+					var { row, col, direction } = options;
+
+					if (!items[row] || !items[row][col]) {
+						return;
+					}
+
+					if (!items[row][col].dropPassageAnimation[direction.label]) {
+						items[row][col].dropPassageAnimation[direction.label] = true;
+					}
+				},
+
+				stopDropPassageAnimation: function(context, options) {
+					var items = context.state.itemsArray;
+
+					console.log(options);
+
+					var { row, col, direction } = options;
+
+					items[row][col].dropPassageAnimation[direction.label] = false;
+				},
+
+				popBubble: function(context, options) {
+					var { row, col } = options;
+
 					if (context.state.itemsArray[row][col].value > MAX_ITEM_VALUE) {
 						context.state.itemsArray[row][col].value = MIN_ITEM_VALUE;
+						context.dispatch('makePopAnimation', options);
 
-						this.dispatch('emitAllDrops', { row:row, col: col, addBonusDrop: true });
+						setTimeout(function () {
+							context.dispatch('injectAllDrops', options);
+						}, DROP_POP_DELAY);
 					}
+				},
+				makePopAnimation: function(context, options) {
+					var { row, col } = options;
+
+					context.state.itemsArray[row][col].isPopAnimationActive = true;
+					setTimeout(function () {
+						context.state.itemsArray[row][col].isPopAnimationActive = false;
+					}, DROP_POP_DELAY);
 				}
-			}
+			},
 		});
 
+
 		var item = {
-			template: '<div class="item" v-bind:value="item.value" v-bind:data-row="item.row" v-bind:data-col="item.col" v-on:click.prevent="onClick">{{ theValue }}</div>',
+			template: '<div class="item" v-bind:value="item.value" v-bind:data-row="item.row" v-bind:data-col="item.col" v-on:click.prevent="onClick">{{ theValue }}<div class="pop-animation" v-if="item.isPopAnimationActive"></div><div class="drop-passage-anim-box"><div class="drop-passage left" v-if="item.dropPassageAnimation.left"></div><div class="drop-passage top" v-if="item.dropPassageAnimation.top"></div><div class="drop-passage right" v-if="item.dropPassageAnimation.right"></div><div class="drop-passage bottom" v-if="item.dropPassageAnimation.bottom"></div></div></div>',
 			props: [ 'item' ],
 			computed: {
 				theValue: function () {
@@ -148,8 +218,8 @@
 			},
 			methods: {
 				onClick: function(event) {
-					var row = +event.target.getAttribute('data-row');
-					var col = +event.target.getAttribute('data-col');
+					var row = +event.currentTarget.getAttribute('data-row');
+					var col = +event.currentTarget.getAttribute('data-col');
 
 					this.$store.dispatch('makeUserMove', { row: row, col: col })
 				}

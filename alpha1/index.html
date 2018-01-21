@@ -19,6 +19,12 @@
 
 <div id="root">
 	<div class="wrapper">
+		<div class="drop-passage-anim-box" style="position: relative; display: none; width: 48px; height: 48px;">
+			<div class="drop-passage left"></div>
+			<div class="drop-passage top"></div>
+			<div class="drop-passage right"></div>
+			<div class="drop-passage bottom"></div>
+		</div>
 		<hello-screen v-if="!gameStarted"></hello-screen>
 		<you-lost v-if="youLost"></you-lost>
 		<you-win v-if="youWin"></you-win>

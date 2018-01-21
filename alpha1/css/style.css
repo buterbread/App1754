@@ -2,7 +2,6 @@ html, body {
 	margin: 0;
 	font: normal normal 14px/1.4 Helvetica, Arial, sans-serif;
 	background: #ffffff;
-	overflow: hidden;
 	height: 100%;
 }
 
@@ -51,6 +50,60 @@ html, body {
 .clear {
 	display: block;
 	clear: both;
+}
+
+.pop-animation {
+	background: #333333;
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 50;
+	opacity: 0.3;
+}
+
+.drop-passage-anim-box {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+}
+
+@keyframes passage {
+	from { width: 0; }
+	to { width: 200px; }
+}
+
+.drop-passage {
+	position: absolute;
+	right: 50%;
+	top: 0;
+	bottom: 0;
+	margin: auto;
+	height: 10px;
+	width: 10px;
+	background: #f00;
+	opacity: 0.5;
+	transform-origin: right;
+
+	animation-name: passage;
+	animation-duration: 0.68s;
+	animation-fill-mode: forwards;
+	animation-timing-function: linear
+}
+
+.drop-passage.top {
+	transform: rotate(90deg);
+}
+
+.drop-passage.right {
+	transform: rotate(180deg);
+}
+
+.drop-passage.bottom {
+	transform: rotate(270deg);
 }
 
 .drops-counter {
